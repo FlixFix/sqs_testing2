@@ -3,3 +3,4 @@
 ```{openapi} openapi.yaml
 :style: table
 :http-methods:
+```

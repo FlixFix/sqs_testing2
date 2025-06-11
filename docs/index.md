@@ -4,4 +4,4 @@
 :maxdepth: 2
 :caption: Contents:
 
-api.md
+api.rst
