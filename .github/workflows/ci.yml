@@ -1,0 +1,102 @@
+name: CI-Pipeline
+
+on:
+  push:
+
+jobs:
+  build:
+    name: Build mit Maven
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Maven Build (without tests)
+        run: mvn clean package -DskipTests
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: |
+            target/*.jar
+
+  run-mockito-tests:
+    name: Run mockito tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+
+      - name: Run mockito test
+        run: mvn test -Dtest=MockitoLibraryTest
+
+  run-db-tests:
+    name: Run tests with self started database
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+
+      - name: Start CI docker containers
+        run: docker compose -f "./compose.yaml" up -d --build --wait --wait-timeout 30
+
+      - name: Run integration test with docker environment
+        run: mvn test -Dtest=ManualLibraryTest
+
+  run-container-tests:
+    name: Integrationstest mit Testcontainers
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+
+      - name: Run Spring Boot test with testcontainers
+        run: mvn test -Dtest=TestContainersLibraryTest
