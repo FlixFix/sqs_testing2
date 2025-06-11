@@ -1,5 +1,4 @@
-API Documentation
-==================
+# API Documentation
 
 .. openapi:: openapi.yaml
     :request:
