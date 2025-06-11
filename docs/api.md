@@ -1,6 +1,5 @@
 # API Documentation
 
-.. openapi:: openapi.yaml
-    :request:
-    :group:
-    :examples:
+```{openapi} openapi.yaml
+:style: table
+:http-methods:
